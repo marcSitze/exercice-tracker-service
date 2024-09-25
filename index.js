@@ -54,12 +54,12 @@ app.post("/api/users/:_id/exercises", (req, res) => {
 
   const newExercise = new Exercise({
     username: findUser.username,
-    date: new Date(date).toDateString(),
+    date: date ? new Date(date).toDateString(): new Date().toDateString(),
     description,
     duration: Number(duration),
     _id: userId
   })
-
+console.log({ newExercise, body: req.body })
   exercices.push(newExercise)
 
   // const userLog = usersLogs.find(item => item.username === findUser.username)
@@ -80,20 +80,23 @@ app.get("/api/users/:_id/logs?", (req, res) => {
 
   // logic to query data // from, to, limit
   const { from, to, limit } = req.query
+  console.log({ query: req.query })
 
   const userExercices = exercices.filter(exercise => String(exercise._id) === userId)
-  console.log({ userExercices })
-  const userExercisesWithLimit = !limit ? userExercices: userExercices.slice(0, Number(limit))
+  // console.log({ userExercices })
   
-  const userExercicesPerRange = userExercisesWithLimit
+  const userExercicesPerRange = userExercices
   .filter(item => (from ? new Date(item.date) >= new Date(from): true) && (to ? new Date(item.date) <= new Date(to): true))
-  const isRange = from || to
+  // const isRange = from || to
+
+  const userExercisesWithLimit = !limit ? userExercicesPerRange: userExercicesPerRange.slice(0, Number(limit))
+
   
   res.json({
     _id: userId,
     username: findUser.username,
-    count: userExercices.length,
-    log: isRange ? userExercicesPerRange : userExercisesWithLimit.map(item => ({
+    count: userExercisesWithLimit.length,
+    log: userExercisesWithLimit.map(item => ({
       description: item.description,
       duration: Number(item.duration),
       date: item.date
